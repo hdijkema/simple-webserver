@@ -113,7 +113,7 @@ public class SimpleWebServer extends Thread {
     }
 
     public static void usage() {
-       System.out.println("Usage: SimpleWebServer.jar --port=<portnr> --dir=<directory to serve>");
+       System.out.println("Usage: SimpleWebServer.jar --port=<portnr> --dir=<directory to serve> [--debug=<true|false>] [--report=<true|false>]");
        System.exit(0);
     }
     

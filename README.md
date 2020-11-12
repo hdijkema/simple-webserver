@@ -1,6 +1,12 @@
 This is a very small standalone web server written in Java. It is packaged in a jar file and may also be used within your own Java programs. It is a fork of the "Java Mini Web Server" (http://www.jibble.org/miniwebserver) written by Paul Mutton. 
 
-I have made some small but useful enhancements, like the hability to easily stop the webserver if you have it embedded in your project, as well to change its root dir without stopping the server. 
+Some small extras by hdijkema like command line otions and more mime-types.
+
+## Usage
+
+java -jar SimpleWebServer.jar --port=<portnr> --dir=<directory to serve> [--debug=true] [--report=true]
+
+Starts the webserver to serve simple requests at the given port for localhost. It will not serve anything more advanced than simple files. E.g. only GET requests are served and no request-parts of the URL are parsed or passed to anything, although it will remove the request-part of a request and serve only the requested path.
 
 ## Starting the Web Server (standalone mode)
 The web server is packaged in a single small jar file for ease of use. You will need Java runtime version 1.5 or later installed in order to execute the web server.
