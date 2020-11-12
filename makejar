@@ -1,0 +1,4 @@
+#!/bin/bash
+javac org/jibble/simplewebserver/*.java
+jar cmf SimpleWebServer.mf SimpleWebServer.jar org/jibble/simplewebserver/SimpleWebServer.class org/jibble/simplewebserver/Utils.class org/jibble/simplewebserver/RequestThread.class 
+rm org/jibble/simplewebserver/*.class
