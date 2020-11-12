@@ -29,6 +29,21 @@ public class RequestThread extends Thread {
     public RequestThread(Socket socket, File rootDir) {
         _socket = socket;
         _rootDir = rootDir;
+        _debug = false;
+        _report = false;
+    }
+
+    public boolean debug() {
+        return _debug;
+    }
+
+    public boolean report() {
+        return _report;
+    }
+
+    public void setReporting(boolean report, boolean debug) {
+        _debug = debug;
+	_report= report;
     }
     
     private static void sendHeader(BufferedOutputStream out, int code, String contentType, long contentLength, long lastModified) throws IOException {
@@ -63,14 +78,35 @@ public class RequestThread extends Thread {
                 sendError(out, 500, "Invalid Method.");
                 return;
             }            
-            String path = request.substring(4, request.length() - 9);            
-            File file = new File(_rootDir, URLDecoder.decode(path, "UTF-8")).getCanonicalFile();
+            String path = request.substring(4, request.length() - 9);
+            String decoded_path = URLDecoder.decode(path, "UTF-8");
+            int idx = decoded_path.indexOf('?');
+            String req_str = "";
+            if (idx >= 0) { 
+               req_str = decoded_path.substring(idx);
+               decoded_path = decoded_path.substring(0, idx); 
+            }
+
+            if (this.debug()) {
+               System.out.println("request: " + request + ", path: " + decoded_path);
+            }
+
+            if (this.report()) {
+ 	       if (idx >= 0) { System.out.println("Skipped URL request part: " + req_str); }
+            }
+
+            File file = new File(_rootDir, decoded_path).getCanonicalFile();
             
             if (file.isDirectory()) {
                 // Check to see if there is an index file in the directory.
                 File indexFile = new File(file, "index.html");
                 if (indexFile.exists() && !indexFile.isDirectory()) {
                     file = indexFile;
+                } else {
+                   indexFile = new File(file, "index.htm");
+                   if (indexFile.exists() && !indexFile.isDirectory()) {
+                      file = indexFile;
+                   }
                 }
             }
 
@@ -137,5 +173,7 @@ public class RequestThread extends Thread {
     
     private File _rootDir;
     private Socket _socket;
+    private boolean _debug;
+    private boolean _report;
     
 }

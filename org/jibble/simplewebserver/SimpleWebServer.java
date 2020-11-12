@@ -27,6 +27,8 @@ import java.util.Map;
 public class SimpleWebServer extends Thread {
     private File rootDir;
     private ServerSocket serverSocket;
+    private boolean _debug = false;
+    private boolean _report = false;
     private boolean _running = true;
 
     public static final String VERSION = "SimpleWebServer  http://www.jibble.org/";
@@ -38,11 +40,21 @@ public class SimpleWebServer extends Thread {
         MIME_TYPES.put(".jpg", image + "jpeg");
         MIME_TYPES.put(".jpeg", image + "jpeg");
         MIME_TYPES.put(".png", image + "png");
+        MIME_TYPES.put(".bmp", image + "bmp");
+        MIME_TYPES.put(".ico", image + "x-icon");
+        MIME_TYPES.put(".cur", image + "x-icon");
+        MIME_TYPES.put(".svg", image + "svg+xml");
+        MIME_TYPES.put(".tiff", image + "tiff");
         
         String text = "text/";
         MIME_TYPES.put(".html", text + "html");
         MIME_TYPES.put(".htm", text + "html");
         MIME_TYPES.put(".txt", text + "plain");
+        MIME_TYPES.put(".css", text + "css");
+
+        MIME_TYPES.put(".xml", "application/xml");
+        MIME_TYPES.put(".json", "application/json");
+        MIME_TYPES.put(".js", "application/javascript");
     }
     
     /**
@@ -51,7 +63,10 @@ public class SimpleWebServer extends Thread {
      * @param port the port to listen at
      * @throws IOException
      */
-    public SimpleWebServer(File rootDir, int port) throws IOException {
+    public SimpleWebServer(File rootDir, int port, boolean dbg, boolean rep) throws IOException {
+
+        this._debug = dbg;
+	this._report = rep;
         this.rootDir = rootDir.getCanonicalFile();
         
         if (!this.rootDir.isDirectory()) {
@@ -82,12 +97,13 @@ public class SimpleWebServer extends Thread {
     	}
     	catch (Exception e) {}
     }
-    
+
     public void run() {
         while (_running) {
             try {
                 Socket socket = serverSocket.accept();
                 RequestThread requestThread = new RequestThread(socket, rootDir);
+                requestThread.setReporting(_debug, _report);
                 requestThread.start();
             }
             catch (Exception e) {
@@ -95,10 +111,39 @@ public class SimpleWebServer extends Thread {
             }
         }
     }
+
+    public static void usage() {
+       System.out.println("Usage: SimpleWebServer.jar --port=<portnr> --dir=<directory to serve>");
+       System.exit(0);
+    }
     
     public static void main(String[] args) {
+        int port = -1;
+        String dir = "";
+        boolean dbg = false;
+        boolean rep = false;
+
+        int i, n;
+        for(i = 0, n = args.length; i < n; i++) {
+            String keyval = args[i];
+            String[] parts = keyval.split("=");
+            if (parts.length == 2) {
+               String key = parts[0];
+               String value = parts[1];
+               if (key.equals("--port")) { port = Integer.parseInt(value); }
+               else if (key.equals("--dir")) { dir = value; }
+               else if (key.equals("--help")) { SimpleWebServer.usage(); }
+               else if (key.equals("--debug")) { dbg = Boolean.parseBoolean(value); }
+               else if (key.equals("--report")) { rep = Boolean.parseBoolean(value); }
+               else { System.out.println("Unknown option: " + key); System.exit(1); }
+            }
+        }
+
+        if (port <= 0 || dir =="") { SimpleWebServer.usage(); }
+
+
         try {
-            new SimpleWebServer(new File("./"), 80);
+            new SimpleWebServer(new File(dir), port, dbg, rep);
         }
         catch (Exception e) {
             System.out.println(e);
